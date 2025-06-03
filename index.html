@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Chatbot</title>
+  <style>
+    body { font-family: Arial; background: #f8f8f8; margin: 0; }
+    .chat-container {
+      width: 100%; max-width: 500px; margin: 50px auto; background: white;
+      border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); display: flex;
+      flex-direction: column; height: 80vh;
+    }
+    .chat-messages {
+      flex: 1; padding: 20px; overflow-y: auto;
+    }
+    .chat-input {
+      display: flex; border-top: 1px solid #ccc;
+    }
+    .chat-input input {
+      flex: 1; padding: 10px; border: none; border-radius: 0 0 0 8px;
+    }
+    .chat-input button {
+      padding: 10px 20px; background: #007bff; color: white;
+      border: none; cursor: pointer; border-radius: 0 0 8px 0;
+    }
+    .message { margin-bottom: 15px; }
+    .message.user { text-align: right; color: #333; }
+    .message.bot { text-align: left; color: #007bff; }
+  </style>
+</head>
+<body>
+
+<div class="chat-container">
+  <div class="chat-messages" id="chatMessages">
+    <div class="message bot">Hello!I am Opera Intelligence . So how can I help you today..Feel free to ask.</div>
+  </div>
+  <div class="chat-input">
+    <input type="text" id="userInput" placeholder="Type your message..."/>
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+const API_KEY = 'YOUR_OPENAI_API_KEY'; // Replace with your real API key
+
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const msg = input.value.trim();
+  if (msg === '') return;
+
+  const chatBox = document.getElementById('chatMessages');
+
+  // User message
+  const userMsg = document.createElement('div');
+  userMsg.className = 'message user';
+  userMsg.textContent = msg;
+  chatBox.appendChild(userMsg);
+
+  // Bot message placeholder
+  const botMsg = document.createElement('div');
+  botMsg.className = 'message bot';
+  botMsg.textContent = "Thinking...";
+  chatBox.appendChild(botMsg);
+
+  input.value = '';
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: msg }]
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.choices?.[0]?.message?.content?.trim() || "No response.";
+    botMsg.textContent = reply;
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+  } catch (error) {
+    botMsg.textContent = "Error: " + error.message;
+  }
+}
+</script>
+
+</body>
+</html>
